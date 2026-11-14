@@ -1,0 +1,49 @@
+# --- Agent-only files (never committed) ---
+# AGENTS.md contains operational instructions for AI coding agents and is kept local
+# only; it is intentionally not part of the public/shared repo history.
+AGENTS.md
+
+# --- Environment / secrets ---
+.env
+.env.*
+!.env.example
+
+# --- Node / NestJS / Next.js (apps/backend, apps/web) ---
+node_modules/
+dist/
+build/
+coverage/
+.next/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Flutter / Dart (apps/mobile) ---
+**/.dart_tool/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.packages
+**/.pub-cache/
+**/.pub/
+**/build/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/.last_build_id
+**/android/.gradle/
+**/android/local.properties
+**/*.g.dart
+**/*.freezed.dart
+
+# --- Docker / infra ---
+docker-compose.override.yml
+*.pid
+
+# --- OS / editor ---
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.iml
