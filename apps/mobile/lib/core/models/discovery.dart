@@ -1,3 +1,5 @@
+import 'vibe.dart';
+
 /// Mirrors OpenAPI `PresenceStatus` and `DiscoveryNearbyItem`.
 /// Never includes raw coordinates for other users.
 class PresenceStatus {
@@ -7,6 +9,7 @@ class PresenceStatus {
     required this.updatedAt,
     this.radius,
     this.expiresAt,
+    this.vibe,
   });
 
   final String visibility;
@@ -14,6 +17,9 @@ class PresenceStatus {
   final int? radius;
   final String updatedAt;
   final String? expiresAt;
+
+  /// Null when Invisible, or when Visible with no badge.
+  final Vibe? vibe;
 
   bool get isVisible => visibility == 'VISIBLE';
 
@@ -26,6 +32,7 @@ class PresenceStatus {
       radius: json['radius'] as int?,
       updatedAt: json['updatedAt'] as String,
       expiresAt: json['expiresAt'] as String?,
+      vibe: Vibe.fromApi(json['vibe']),
     );
   }
 }
@@ -39,6 +46,7 @@ class DiscoveryNearbyItem {
     required this.communityName,
     required this.distanceLabel,
     this.avatarUrl,
+    this.vibe,
   });
 
   final String userId;
@@ -51,6 +59,9 @@ class DiscoveryNearbyItem {
   /// Bucketed label only — never a precise meter value (PRIVACY).
   final String distanceLabel;
 
+  /// Preset badge, or null when this member has not set one.
+  final Vibe? vibe;
+
   factory DiscoveryNearbyItem.fromJson(Map<String, dynamic> json) {
     final community = json['community'] as Map<String, dynamic>;
     return DiscoveryNearbyItem(
@@ -61,6 +72,7 @@ class DiscoveryNearbyItem {
       communityId: community['id'] as String,
       communityName: community['name'] as String,
       distanceLabel: json['distanceLabel'] as String,
+      vibe: Vibe.fromApi(json['vibe']),
     );
   }
 }
