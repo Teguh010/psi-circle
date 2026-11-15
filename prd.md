@@ -187,9 +187,11 @@ Contoh tampilan:
 
 Daftar anggota:
 
-- Alex — Automotive Community — Approximately 300 m away.
+- Alex — Automotive Community — Ngopi — Approximately 300 m away.
 - Daniel — Cycling Community — Approximately 700 m away.
 - Michael — Photography Community — Approximately 1 km away.
+
+Kata di tengah (Ngopi, Diskusi, Kegiatan, Say hi) hanya muncul ketika anggota itu memasang status good vibe. Anggota tanpa status tetap tampil seperti Daniel dan Michael.
 
 Angka jarak hanya perkiraan dan tidak boleh memberikan informasi yang memungkinkan seseorang menemukan koordinat presisi pengguna lain.
 
@@ -212,6 +214,32 @@ Sediakan tiga mode utama:
 - Lokasi digunakan sementara untuk menghitung proximity.
 - Pengguna dapat menerima notifikasi anggota lain di sekitar.
 - Identitas dan informasi profil yang ditampilkan dibatasi oleh pengaturan privasi.
+- Pengguna boleh memasang satu status good vibe. Tanpa status, pengguna tetap dapat ditemukan.
+
+### Good vibe
+
+Good vibe adalah sinyal opsional di atas mode Visible. Visible berarti "saya boleh ditemukan". Good vibe berarti "saya sedang terbuka untuk suasana komunitas".
+
+Preset yang diizinkan, tanpa teks bebas dan tanpa nama tempat:
+
+| Kode | Arti | Kata di Radar |
+|---|---|---|
+| NGOPI | Sedang ngopi atau nongkrong | Ngopi |
+| DISKUSI | Sedang diskusi | Diskusi |
+| KEGIATAN | Sedang ada kegiatan komunitas di sekitar pengguna | Kegiatan |
+| OPEN_TO_SAY_HI | Terbuka untuk disapa | Say hi |
+
+Tampilan:
+
+- Badge kecil di avatar.
+- Satu kata pada kartu anggota Radar.
+
+Aturan:
+
+- Hanya orang yang sudah lolos filter discovery yang sama (komunitas aktif yang sama, keduanya Visible, tidak diblokir, di dalam radius) yang melihat status ini.
+- Admin komunitas tidak melihat status ini, dan tetap tidak melihat lokasi.
+- Status disimpan hanya di dalam presence Redis. Invisible, heartbeat berhenti, atau TTL habis menghapus status bersama presence.
+- Mengganti atau melepas status tidak mematikan Visible.
 
 ### Event Mode
 
@@ -219,6 +247,8 @@ Sediakan tiga mode utama:
 - Pengguna dapat memilih komunitas atau event yang relevan.
 - Pengguna dapat memilih durasi visibilitas.
 - Setelah durasi berakhir, status kembali menjadi Invisible.
+
+Event Mode tetap P1. Itu mode visibilitas berdurasi untuk acara yang dipilih. Good vibe tidak menggantikannya.
 
 Default aplikasi adalah **Invisible**. Pengguna harus secara eksplisit mengaktifkan Visible.
 
@@ -318,6 +348,7 @@ Aturan wajib:
 8. Pengguna harus dapat menonaktifkan visibilitas kapan saja.
 9. Lokasi sementara harus otomatis kedaluwarsa.
 10. Pengguna dapat memblokir siapa pun.
+11. Status good vibe hanya boleh berupa preset tetap. Jangan menerima teks bebas atau nama tempat. Status itu ikut terhapus bersama presence dan tidak disimpan sebagai riwayat.
 
 ## 4.2 Location Data Retention
 
@@ -374,6 +405,7 @@ Tambahkan penjelasan yang jelas ketika meminta izin lokasi.
 | FR-008 | Location permission handling | P0 |
 | FR-009 | Nearby member discovery | P0 |
 | FR-010 | Approximate distance | P0 |
+| FR-021 | Good vibe badge on Radar | P0 |
 | FR-011 | Wave system | P0 |
 | FR-012 | Connection acceptance | P0 |
 | FR-013 | Real-time chat | P1 |
@@ -708,6 +740,7 @@ Data:
   "longitude": 112.123456,
   "activeCommunityIds": ["uuid"],
   "visibility": "VISIBLE",
+  "vibe": "NGOPI",
   "updatedAt": "2026-11-15T00:00:00Z"
 }
 ```
@@ -779,7 +812,8 @@ Contoh request:
 {
   "latitude": -7.123456,
   "longitude": 112.123456,
-  "activeCommunityIds": ["community-uuid"]
+  "activeCommunityIds": ["community-uuid"],
+  "vibe": "NGOPI"
 }
 ```
 
@@ -791,6 +825,8 @@ Server harus memvalidasi:
 - Koordinat valid.
 - Radius pencarian tidak melewati batas.
 - User tidak sedang diblokir dalam hubungan yang relevan.
+- Jika `vibe` dikirim, nilainya salah satu dari `NGOPI`, `DISKUSI`, `KEGIATAN`, `OPEN_TO_SAY_HI`. `null` atau field yang tidak dikirim pada `POST /presence/visible` berarti Visible tanpa badge.
+- Pada `POST /presence/heartbeat`, field `vibe` yang tidak dikirim mempertahankan status yang ada. `null` melepas badge. Nilai preset mengganti status. Heartbeat tidak boleh menghapus badge hanya karena field itu absen.
 
 ## 9.5 Discovery
 
@@ -819,13 +855,14 @@ Contoh response:
         "id": "uuid",
         "name": "Automotive Community"
       },
-      "distanceLabel": "300-500 m"
+      "distanceLabel": "300-500 m",
+      "vibe": "NGOPI"
     }
   ]
 }
 ```
 
-Response tidak boleh mengandung latitude atau longitude pengguna lain.
+Response tidak boleh mengandung latitude atau longitude pengguna lain. Field `vibe` bernilai salah satu preset atau `null`.
 
 ## 9.6 Connections
 
@@ -1200,6 +1237,9 @@ The MVP is considered functional when all of the following work:
 - Presence expires when heartbeat stops.
 - Presence is not available to community admins.
 - No raw location is returned to another user.
+- While Visible, the user can set, change, or clear a good-vibe preset.
+- Clearing visibility deletes the vibe with the presence.
+- A vibe is never free text and never a place name.
 
 ### Discovery
 
@@ -1211,6 +1251,7 @@ The MVP is considered functional when all of the following work:
 - Users outside the shared community cannot discover each other through that community.
 - Blocked users cannot discover each other.
 - Discovery response contains approximate distance only.
+- Discovery includes `vibe` only for members who already pass the discovery filters. `null` means no badge.
 
 ### Connection
 
