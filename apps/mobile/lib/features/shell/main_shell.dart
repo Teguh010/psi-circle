@@ -20,9 +20,11 @@ class MainShell extends StatelessWidget {
     final onRadar = navigationShell.currentIndex == 0;
     return Scaffold(
       extendBody: true,
-      body: Padding(
+      body: SizedBox.expand(
+        child: Padding(
         padding: EdgeInsets.only(bottom: onRadar ? 0 : 88),
         child: navigationShell,
+        ),
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.fromLTRB(20, 0, 20, 10 + MediaQuery.paddingOf(context).bottom),

@@ -113,13 +113,13 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
 
     return Scaffold(
       backgroundColor: PsiColors.black,
-      body: Stack(
+      body: SizedBox.expand(
+        child: Stack(
+        fit: StackFit.expand,
         children: [
           Positioned.fill(
             child: RadarMap(
               center: _mockSelfLocation,
-              isVisible: visible,
-              fullBleed: true,
             ),
           ),
           const Positioned.fill(
@@ -177,7 +177,11 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                 },
               ),
             ),
-          SafeArea(
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
               child: Column(
@@ -214,6 +218,7 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                     ),
                 ],
               ),
+            ),
             ),
           ),
           Positioned(
@@ -281,6 +286,7 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
             ),
           ),
         ],
+        ),
       ),
     );
   }
