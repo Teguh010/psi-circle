@@ -1,4 +1,5 @@
 import '../../../core/models/discovery.dart';
+import '../../../core/models/vibe.dart';
 import 'presence_repository.dart';
 
 /// OpenAPI Presence examples — never returns coordinates.
@@ -7,6 +8,7 @@ class MockPresenceRepository implements PresenceRepository {
     'visibility': 'INVISIBLE',
     'activeCommunityIds': <String>[],
     'radius': null,
+    'vibe': null,
     'updatedAt': '2026-11-15T08:00:00Z',
     'expiresAt': null,
   });
@@ -23,6 +25,7 @@ class MockPresenceRepository implements PresenceRepository {
     required double longitude,
     required List<String> activeCommunityIds,
     int radius = 3000,
+    Vibe? vibe,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     // latitude/longitude accepted but never stored in the returned status.
@@ -30,6 +33,7 @@ class MockPresenceRepository implements PresenceRepository {
       'visibility': 'VISIBLE',
       'activeCommunityIds': activeCommunityIds,
       'radius': radius,
+      'vibe': vibe?.apiValue,
       'updatedAt': '2026-11-15T08:00:00Z',
       'expiresAt': '2026-11-15T08:02:00Z',
     });
@@ -43,6 +47,7 @@ class MockPresenceRepository implements PresenceRepository {
       'visibility': 'INVISIBLE',
       'activeCommunityIds': <String>[],
       'radius': null,
+      'vibe': null,
       'updatedAt': '2026-11-15T08:05:00Z',
       'expiresAt': null,
     });
