@@ -211,14 +211,14 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
             child: SafeArea(
               child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
-              child: Row(
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const Expanded(
+                        child: Text(
                           'People nearby',
                           style: TextStyle(
                             color: PsiColors.white,
@@ -226,16 +226,15 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        _VibeInfoButton(onPressed: () => _showVibePicker(visible)),
-                      ],
-                    ),
+                      ),
+                      _LocationToggle(
+                        visible: visible,
+                        busy: _busy,
+                        onChanged: (show) => _setHidden(!show),
+                      ),
+                    ],
                   ),
-                  _LocationToggle(
-                    visible: visible,
-                    busy: _busy,
-                    onChanged: (show) => _setHidden(!show),
-                  ),
+                  _VibeInfoButton(onPressed: () => _showVibePicker(visible)),
                 ],
               ),
             ),
@@ -381,16 +380,22 @@ class _VibeInfoButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      tooltip: 'Good vibe',
-      visualDensity: VisualDensity.compact,
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-      icon: Icon(
-        Icons.info_outline,
-        size: 16,
-        color: PsiColors.white.withValues(alpha: 0.45),
+    return Tooltip(
+      message: 'Good vibe',
+      child: GestureDetector(
+        onTap: onPressed,
+        behavior: HitTestBehavior.opaque,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 2, right: 12, bottom: 4),
+          child: Transform.translate(
+            offset: const Offset(-1, 0),
+            child: Icon(
+              Icons.info_outline,
+              size: 15,
+              color: PsiColors.white.withValues(alpha: 0.45),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -532,6 +537,7 @@ class _LocationToggle extends StatelessWidget {
           scale: 0.8,
           child: Switch(
             value: visible,
+            materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             onChanged: busy ? null : onChanged,
           ),
         ),
