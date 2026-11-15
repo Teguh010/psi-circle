@@ -44,12 +44,14 @@ modules; mobile app boots to a blank/placeholder screen. No feature logic yet.
 
 ## Phase 2 — Auth & Community (contract → mock UI → backend → integration)
 
-- [ ] Contract: confirm/refine `auth/*`, `users/me`, `communities/*` sections of
+- [x] Contract: confirm/refine `auth/*`, `users/me`, `communities/*` sections of
       `docs/api/openapi.yaml` (already drafted in v0.1 — adjust if needed, do not drift
       silently).
-- [ ] Mobile UI (mock data): onboarding (welcome, register, login, profile setup,
+- [x] Mobile UI (mock data): onboarding (welcome, register, login, profile setup,
       interest selection), community search/create/join screens — all backed by mock
       repositories returning contract `example:` payloads.
+      Also included a mock Radar shell (presence toggle + nearby list) and Chats
+      placeholder so main navigation matches PRD §3.1 while later phases fill in.
 - [ ] Backend: `auth` module (register, login, refresh, logout, verify-email —
       password hashing, JWT access+refresh, revocation), `users`/`profiles` modules,
       `communities` + `memberships` modules (CRUD, search, join/leave, invitation code).
@@ -57,6 +59,10 @@ modules; mobile app boots to a blank/placeholder screen. No feature logic yet.
       phase's features only.
 - [ ] Tests: auth service unit tests, membership rule unit tests, registration/login
       integration test, join-community integration test.
+
+**Assumption (mock UI):** interest tags are local onboarding state only — no OpenAPI
+field yet. "My communities" uses a mock-repo helper until a memberships list endpoint
+is added to the contract.
 
 **Deliverable:** Users can create accounts and join communities, end-to-end.
 

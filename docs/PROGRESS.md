@@ -5,6 +5,38 @@ Newest entry on top.
 
 ---
 
+## 2026-11-15 — Phase 2 (partial): Flutter UI on mock data
+
+**Status:** In progress (mobile mock UI done; backend + integration not started)
+
+**What was built (`apps/mobile`):**
+
+- Feature-first layout per `docs/ARCHITECTURE.md` §4: `auth`, `onboarding`,
+  `communities`, `radar`, `chat` (placeholder), `profile`, plus `core/models` and
+  Riverpod repository providers.
+- Repository interfaces + mock implementations that return payloads shaped like the
+  `example:` blocks in `docs/api/openapi.yaml` (auth, profile, communities, presence,
+  discovery). No real HTTP yet.
+- Screens: welcome, login, register, profile setup, interest selection, join-community
+  onboarding, main shell (Radar / Communities / Chats / Profile), community search /
+  detail / create, Radar with Visible toggle + nearby list (bucketed distance labels
+  only), profile + logout.
+- `flutter analyze` clean; widget smoke test passes.
+
+**Assumptions / notes:**
+
+- Interest selection is local-only onboarding UX (PRD §3.2); OpenAPI has no interests
+  endpoint yet.
+- "My communities" is a mock-repository helper until the contract adds a dedicated
+  memberships list endpoint.
+- Radar map is a visual placeholder; real `flutter_map` + geolocator wiring belongs
+  with Phase 3 integration.
+- Chats tab is intentionally a placeholder until Phase 5.
+
+**Still open for Phase 2:** backend auth/communities modules + HTTP swap.
+
+---
+
 ## 2026-11-15 — Phase 0: Documentation & Planning
 
 **Status:** Complete
@@ -39,7 +71,5 @@ Newest entry on top.
 - Connection uniqueness enforced via a canonically-ordered pair key rather than relying
   on `(requester_id, recipient_id)` alone (see `docs/DATABASE.md` §6).
 
-**Not started yet:** no code. `apps/mobile`, `apps/backend`, `apps/web`, and
-`docker-compose.yml` do not exist yet — that is Phase 1 in `docs/DEVELOPMENT_PLAN.md`.
-
-**Known issues:** none.
+**Known issues:** none. Note: Phase 1 scaffolding (apps + docker-compose) was added after
+this entry and is present in the repo even though Phase 0 originally said "no code yet".
