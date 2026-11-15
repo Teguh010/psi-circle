@@ -10,19 +10,21 @@ class RadarMap extends StatelessWidget {
     required this.center,
     required this.isVisible,
     this.radiusMeters = 3000,
+    this.fullBleed = false,
   });
 
   /// Caller's own mock/real position — never another user's coords.
   final LatLng center;
   final bool isVisible;
   final int radiusMeters;
+  final bool fullBleed;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
     return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(fullBleed ? 0 : 16),
       child: Stack(
         children: [
           FlutterMap(

@@ -9,41 +9,40 @@ class MainShell extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   static const _tabs = [
-    (icon: Icons.radar_outlined, selected: Icons.radar, label: 'Radar'),
-    (icon: Icons.groups_outlined, selected: Icons.groups, label: 'Communities'),
-    (
-      icon: Icons.chat_bubble_outline,
-      selected: Icons.chat_bubble,
-      label: 'Chats',
-    ),
-    (icon: Icons.person_outline, selected: Icons.person, label: 'Profile'),
+    (icon: Icons.radar, label: 'Radar'),
+    (icon: Icons.groups, label: 'Communities'),
+    (icon: Icons.chat_bubble, label: 'Chats'),
+    (icon: Icons.person, label: 'Profile'),
   ];
 
   @override
   Widget build(BuildContext context) {
+    final onRadar = navigationShell.currentIndex == 0;
     return Scaffold(
-      body: navigationShell,
-      bottomNavigationBar: DecoratedBox(
-        decoration: const BoxDecoration(
-          color: PsiColors.white,
-          border: Border(top: BorderSide(color: PsiColors.black, width: 2)),
-        ),
-        child: SafeArea(
-          top: false,
+      extendBody: true,
+      body: Padding(
+        padding: EdgeInsets.only(bottom: onRadar ? 0 : 88),
+        child: navigationShell,
+      ),
+      bottomNavigationBar: Padding(
+        padding: EdgeInsets.fromLTRB(20, 0, 20, 10 + MediaQuery.paddingOf(context).bottom),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: PsiColors.black,
+            borderRadius: BorderRadius.circular(32),
+            border: Border.all(color: PsiColors.red, width: 2),
+          ),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 for (var i = 0; i < _tabs.length; i++)
-                  Expanded(
-                    child: _PsiTab(
-                      icon: navigationShell.currentIndex == i
-                          ? _tabs[i].selected
-                          : _tabs[i].icon,
-                      label: _tabs[i].label,
-                      selected: navigationShell.currentIndex == i,
-                      onTap: () => navigationShell.goBranch(i),
-                    ),
+                  _PsiTab(
+                    icon: _tabs[i].icon,
+                    label: _tabs[i].label,
+                    selected: navigationShell.currentIndex == i,
+                    onTap: () => navigationShell.goBranch(i),
                   ),
               ],
             ),
@@ -69,39 +68,22 @@ class _PsiTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 3),
+    return Tooltip(
+      message: label,
       child: Material(
         color: selected ? PsiColors.red : PsiColors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: PsiColors.black, width: 1.5),
+        shape: const CircleBorder(
+          side: BorderSide(color: PsiColors.black, width: 1.5),
         ),
         child: InkWell(
+          customBorder: const CircleBorder(),
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 6),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  icon,
-                  size: 20,
-                  color: selected ? PsiColors.white : PsiColors.black,
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w800,
-                    color: selected ? PsiColors.white : PsiColors.red,
-                  ),
-                ),
-              ],
+          child: SizedBox(
+            width: 48,
+            height: 48,
+            child: Icon(
+              icon,
+              color: selected ? PsiColors.white : PsiColors.black,
             ),
           ),
         ),

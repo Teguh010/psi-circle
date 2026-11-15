@@ -22,6 +22,39 @@ class MockDiscoveryRepository implements DiscoveryRepository {
         'distanceLabel': '300-500 m',
       }),
       DiscoveryNearbyItem.fromJson(const {
+        'userId': 'f5f0c6f0-5555-4a11-9a11-000000000005',
+        'displayName': 'Sari',
+        'username': 'sari.w',
+        'avatarUrl': null,
+        'community': {
+          'id': 'c1111111-0000-0000-0000-000000000001',
+          'name': 'Automotive Community',
+        },
+        'distanceLabel': '300-500 m',
+      }),
+      DiscoveryNearbyItem.fromJson(const {
+        'userId': 'a6f0c6f0-6666-4a11-9a11-000000000006',
+        'displayName': 'Bima',
+        'username': 'bima_r',
+        'avatarUrl': null,
+        'community': {
+          'id': 'c1111111-0000-0000-0000-000000000001',
+          'name': 'Automotive Community',
+        },
+        'distanceLabel': '500 m-1 km',
+      }),
+      DiscoveryNearbyItem.fromJson(const {
+        'userId': 'b7f0c6f0-7777-4a11-9a11-000000000007',
+        'displayName': 'Raka',
+        'username': 'raka',
+        'avatarUrl': null,
+        'community': {
+          'id': 'c1111111-0000-0000-0000-000000000001',
+          'name': 'Automotive Community',
+        },
+        'distanceLabel': '1-3 km',
+      }),
+      DiscoveryNearbyItem.fromJson(const {
         'userId': 'd3f0c6f0-3333-4a11-9a11-000000000003',
         'displayName': 'Daniel',
         'username': 'daniel_r',
