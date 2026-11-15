@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
 
 import '../../../core/models/community.dart';
 import '../../../core/models/discovery.dart';
 import '../../../core/providers/repository_providers.dart';
+import 'radar_map.dart';
+
+/// Mock "you are here" — Surabaya-ish coords from OpenAPI presence example.
+const _mockSelfLocation = LatLng(-7.123456, 112.123456);
 
 class RadarScreen extends ConsumerStatefulWidget {
   const RadarScreen({super.key});
@@ -64,8 +69,8 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
       final presenceRepo = ref.read(presenceRepositoryProvider);
       if (visible) {
         final status = await presenceRepo.setVisible(
-          latitude: -7.123456,
-          longitude: 112.123456,
+          latitude: _mockSelfLocation.latitude,
+          longitude: _mockSelfLocation.longitude,
           activeCommunityIds: [communityId!],
         );
         setState(() => _presence = status);
@@ -89,114 +94,174 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
     }
 
     final visible = _presence?.isVisible ?? false;
+    final radius = _presence?.radius ?? 3000;
 
+    // Map must sit in a bounded box outside a scrolling ListView — putting
+    // FlutterMap inside ListView triggers layout/semantics assertion storms.
     return Scaffold(
       appBar: AppBar(title: const Text('Radar')),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Card(
-            child: Padding(
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: SizedBox(
+              height: 240,
+              child: RadarMap(
+                center: _mockSelfLocation,
+                isVisible: visible,
+                radiusMeters: radius,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+            child: Text(
+              'Map shows your area only. Nearby people are listed with '
+              'approximate distance — never as exact pins.',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+            ),
+          ),
+          Expanded(
+            child: ListView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          visible ? 'You are Visible' : 'You are Invisible',
-                          style: Theme.of(context).textTheme.titleMedium,
+              children: [
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                visible
+                                    ? 'You are Visible'
+                                    : 'You are Invisible',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                            ),
+                            Switch(
+                              value: visible,
+                              onChanged: _busy ? null : _toggleVisibility,
+                            ),
+                          ],
                         ),
-                      ),
-                      Switch(
-                        value: visible,
-                        onChanged: _busy ? null : _toggleVisibility,
-                      ),
-                    ],
-                  ),
-                  Text(
-                    visible
-                        ? 'Nearby members from your active community can discover you. Coordinates stay on the server.'
-                        : 'Turn Visible to publish temporary presence and see nearby members.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        Text(
+                          visible
+                              ? 'Nearby members from your active community can discover you. Coordinates stay on the server.'
+                              : 'Turn Visible to publish temporary presence and see nearby members.',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurfaceVariant,
+                                  ),
                         ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text('Active community', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
-          if (_myCommunities.isEmpty)
-            const Text('Join a community to use Radar.')
-          else
-            DropdownButtonFormField<String>(
-              initialValue: _selectedCommunityId,
-              items: _myCommunities
-                  .map(
-                    (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
-                  )
-                  .toList(),
-              onChanged: (value) async {
-                setState(() => _selectedCommunityId = value);
-                if (visible) await _loadNearby();
-              },
-            ),
-          const SizedBox(height: 24),
-          Text(
-            visible
-                ? '${_nearby.length} people from your communities are nearby.'
-                : 'Nearby list appears when you are Visible.',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 12),
-          if (!visible)
-            const SizedBox.shrink()
-          else if (_nearby.isEmpty)
-            const Text('No one nearby right now (mock).')
-          else
-            ..._nearby.map(
-              (item) => ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: CircleAvatar(
-                  child: Text(item.displayName[0].toUpperCase()),
                 ),
-                title: Text(item.displayName),
-                subtitle: Text('${item.communityName} · ${item.distanceLabel}'),
-                trailing: FilledButton.tonal(
-                  onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Wave to ${item.displayName} — Phase 4'),
+                const SizedBox(height: 16),
+                Text(
+                  'Active community',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 8),
+                if (_myCommunities.isEmpty)
+                  const Text('Join a community to use Radar.')
+                else
+                  DropdownButtonFormField<String>(
+                    initialValue: _selectedCommunityId,
+                    items: _myCommunities
+                        .map(
+                          (c) => DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) async {
+                      setState(() => _selectedCommunityId = value);
+                      if (visible) await _loadNearby();
+                    },
+                  ),
+                const SizedBox(height: 24),
+                Text(
+                  visible
+                      ? '${_nearby.length} people from your communities are nearby.'
+                      : 'Nearby list appears when you are Visible.',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 12),
+                if (!visible)
+                  const SizedBox.shrink()
+                else if (_nearby.isEmpty)
+                  const Text('No one nearby right now (mock).')
+                else
+                  ..._nearby.map(
+                    (item) => Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          CircleAvatar(
+                            child: Text(item.displayName[0].toUpperCase()),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  item.displayName,
+                                  style: Theme.of(context).textTheme.titleSmall,
+                                ),
+                                Text(
+                                  '${item.communityName} · ${item.distanceLabel}',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurfaceVariant,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          // Do not use theme FilledButton here — app theme sets
+                          // minimumSize: Size.fromHeight(48) (infinite width),
+                          // which breaks as a ListTile/row trailing action.
+                          FilledButton.tonal(
+                            style: FilledButton.styleFrom(
+                              minimumSize: const Size(72, 40),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                              ),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Wave to ${item.displayName} — Phase 4',
+                                  ),
+                                ),
+                              );
+                            },
+                            child: const Text('Wave'),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                  child: const Text('Wave'),
-                ),
-              ),
-            ),
-          const SizedBox(height: 24),
-          // Simple map placeholder — real map wiring comes with location
-          // integration in Phase 3. Mock UI keeps the Radar composition clear.
-          AspectRatio(
-            aspectRatio: 16 / 10,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(
-                child: Text(
-                  'Map preview (mock)\nNo coordinates shown for other users',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                ),
-              ),
+                    ),
+                  ),
+              ],
             ),
           ),
         ],

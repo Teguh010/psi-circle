@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../core/theme/app_theme.dart';
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
 
@@ -8,6 +10,7 @@ class WelcomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
+      backgroundColor: PsiColors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -15,18 +18,25 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
+              Container(
+                width: 48,
+                height: 4,
+                color: PsiColors.red,
+              ),
+              const SizedBox(height: 20),
               Text(
                 'Psi Circle',
                 style: theme.textTheme.displaySmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w800,
+                  color: PsiColors.black,
+                  letterSpacing: -0.5,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 'Discover people from your communities when you are nearby.',
                 style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                  color: PsiColors.muted,
                   height: 1.4,
                 ),
               ),
@@ -45,7 +55,7 @@ class WelcomeScreen extends StatelessWidget {
                 'Mock data mode — no backend calls yet',
                 textAlign: TextAlign.center,
                 style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.outline,
+                  color: PsiColors.muted,
                 ),
               ),
             ],
