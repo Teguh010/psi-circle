@@ -14,6 +14,8 @@ import 'features/onboarding/presentation/interest_selection_screen.dart';
 import 'features/onboarding/presentation/join_communities_onboarding_screen.dart';
 import 'features/onboarding/presentation/profile_setup_screen.dart';
 import 'features/profile/presentation/profile_screen.dart';
+import 'features/radar/presentation/nearby_member_screen.dart';
+import 'core/models/discovery.dart';
 import 'features/radar/presentation/radar_screen.dart';
 import 'features/shell/main_shell.dart';
 
@@ -95,6 +97,21 @@ final goRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: '/radar',
                 builder: (context, state) => const RadarScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'member',
+                    parentNavigatorKey: _rootNavigatorKey,
+                    builder: (context, state) {
+                      final person = state.extra;
+                      if (person is! DiscoveryNearbyItem) {
+                        return const Scaffold(
+                          body: Center(child: Text('Member not found')),
+                        );
+                      }
+                      return NearbyMemberScreen(person: person);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

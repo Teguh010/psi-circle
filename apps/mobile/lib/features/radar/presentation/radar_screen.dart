@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
-import '../../../core/models/community.dart';
 import '../../../core/models/discovery.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/theme/app_theme.dart';
@@ -21,11 +21,9 @@ class RadarScreen extends ConsumerStatefulWidget {
 }
 
 class _RadarScreenState extends ConsumerState<RadarScreen> {
-  List<Community> _myCommunities = [];
-  String? _selectedCommunityId;
+  String? _communityId;
   PresenceStatus? _presence;
   List<DiscoveryNearbyItem> _nearby = [];
-  DiscoveryNearbyItem? _selected;
   bool _loading = true;
   bool _busy = false;
 
@@ -40,27 +38,22 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
         await ref.read(communitiesRepositoryProvider).myCommunities();
     final presence = await ref.read(presenceRepositoryProvider).getStatus();
     setState(() {
-      _myCommunities = communities;
-      _selectedCommunityId =
-          communities.isNotEmpty ? communities.first.id : null;
+      _communityId = communities.isNotEmpty ? communities.first.id : null;
       _presence = presence;
       _loading = false;
     });
-    if (presence.isVisible && _selectedCommunityId != null) {
+    if (presence.isVisible && _communityId != null) {
       await _loadNearby();
     }
   }
 
   Future<void> _loadNearby() async {
-    final communityId = _selectedCommunityId;
+    final communityId = _communityId;
     if (communityId == null) return;
     final nearby = await ref
         .read(discoveryRepositoryProvider)
         .nearby(communityId: communityId);
-    setState(() {
-      _nearby = nearby;
-      _selected = nearby.isEmpty ? null : nearby.first;
-    });
+    setState(() => _nearby = nearby);
   }
 
   Future<void> _setHidden(bool hidden) async {
@@ -68,7 +61,7 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
   }
 
   Future<void> _toggleVisibility(bool visible) async {
-    final communityId = _selectedCommunityId;
+    final communityId = _communityId;
     if (visible && communityId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Join a community first')),
@@ -91,7 +84,6 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
         setState(() {
           _presence = status;
           _nearby = [];
-          _selected = null;
         });
       }
     } finally {
@@ -109,7 +101,6 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
     }
 
     final visible = _presence?.isVisible ?? false;
-    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
       backgroundColor: PsiColors.black,
@@ -130,12 +121,11 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Color(0xCC111111),
-                      Color(0x33111111),
-                      Color(0x00111111),
-                      Color(0xE6111111),
+                      Color(0x99111111),
+                      Color(0x22111111),
+                      Color(0x00000000),
                     ],
-                    stops: [0, 0.22, 0.55, 1],
+                    stops: [0, 0.18, 0.42],
                   ),
                 ),
               ),
@@ -163,11 +153,13 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                           left: center.dx + _offset(i, size).dx - 28,
                           top: center.dy + _offset(i, size).dy - 28,
                           child: GestureDetector(
-                            onTap: () => setState(() => _selected = _nearby[i]),
+                            onTap: () => context.push(
+                              '/radar/member',
+                              extra: _nearby[i],
+                            ),
                             child: _PersonBubble(
                               person: _nearby[i],
                               index: i,
-                              selected: _nearby[i].userId == _selected?.userId,
                               size: 56,
                             ),
                           ),
@@ -182,107 +174,29 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
             left: 0,
             right: 0,
             child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    'People nearby',
-                    style: TextStyle(
-                      color: PsiColors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.6,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    visible
-                        ? '${_nearby.length} from your communities'
-                        : 'You are hidden',
-                    style: const TextStyle(
-                      color: PsiColors.white,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  if (_myCommunities.isNotEmpty)
-                    _CommunityPill(
-                      communities: _myCommunities,
-                      selectedId: _selectedCommunityId,
-                      onChanged: (value) async {
-                        setState(() => _selectedCommunityId = value);
-                        if (visible) await _loadNearby();
-                      },
-                    ),
-                ],
-              ),
-            ),
-            ),
-          ),
-          Positioned(
-            left: 16,
-            right: 16,
-            bottom: 92 + bottomInset,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (visible && _nearby.length > 1) ...[
-                  const Align(
-                    alignment: Alignment.centerLeft,
+                  const Expanded(
                     child: Text(
-                      'More people nearby',
+                      'People nearby',
                       style: TextStyle(
                         color: PsiColors.white,
-                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  SizedBox(
-                    height: 64,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _nearby.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (context, index) {
-                        final person = _nearby[index];
-                        final active = person.userId == _selected?.userId;
-                        return GestureDetector(
-                          onTap: () => setState(() => _selected = person),
-                          child: _PersonBubble(
-                            person: person,
-                            index: index,
-                            selected: active,
-                            size: 56,
-                          ),
-                        );
-                      },
-                    ),
+                  _LocationToggle(
+                    visible: visible,
+                    busy: _busy,
+                    onChanged: (show) => _setHidden(!show),
                   ),
-                  const SizedBox(height: 12),
                 ],
-                if (_selected != null)
-                  _PersonCard(
-                    person: _selected!,
-                    onWave: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text('Wave to ${_selected!.displayName}'),
-                        ),
-                      );
-                    },
-                  )
-                else
-                  _HiddenCard(hidden: !visible),
-                const SizedBox(height: 10),
-                _HideLocationBar(
-                  hidden: !visible,
-                  busy: _busy,
-                  onChanged: _setHidden,
-                ),
-              ],
+              ),
+            ),
             ),
           ),
         ],
@@ -358,13 +272,11 @@ class _PersonBubble extends StatelessWidget {
   const _PersonBubble({
     required this.person,
     required this.index,
-    required this.selected,
     required this.size,
   });
 
   final DiscoveryNearbyItem person;
   final int index;
-  final bool selected;
   final double size;
 
   @override
@@ -382,8 +294,8 @@ class _PersonBubble extends StatelessWidget {
             color: fill,
             shape: BoxShape.circle,
             border: Border.all(
-              color: selected ? PsiColors.white : PsiColors.black,
-              width: selected ? 3 : 2,
+              color: PsiColors.black,
+              width: 2,
             ),
             boxShadow: const [
               BoxShadow(color: Color(0x66000000), blurRadius: 8, offset: Offset(0, 3)),
@@ -415,182 +327,40 @@ class _PersonBubble extends StatelessWidget {
   }
 }
 
-class _PersonCard extends StatelessWidget {
-  const _PersonCard({required this.person, required this.onWave});
-
-  final DiscoveryNearbyItem person;
-  final VoidCallback onWave;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: PsiColors.white,
-      elevation: 8,
-      shadowColor: Colors.black54,
-      borderRadius: BorderRadius.circular(28),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-        child: Column(
-          children: [
-            Container(
-              width: 72,
-              height: 72,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: PsiColors.red,
-                shape: BoxShape.circle,
-                border: Border.all(color: PsiColors.black, width: 2),
-              ),
-              child: Text(
-                person.displayName.isEmpty
-                    ? '?'
-                    : person.displayName[0].toUpperCase(),
-                style: const TextStyle(
-                  color: PsiColors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              person.displayName,
-              style: const TextStyle(
-                color: PsiColors.black,
-                fontSize: 22,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              '${person.distanceLabel} · ${person.communityName}',
-              style: const TextStyle(
-                color: PsiColors.muted,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: FilledButton(
-                style: PsiButtons.filled(),
-                onPressed: onWave,
-                child: const Text('Wave'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HiddenCard extends StatelessWidget {
-  const _HiddenCard({required this.hidden});
-
-  final bool hidden;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: PsiColors.white,
-      borderRadius: BorderRadius.circular(28),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          hidden
-              ? 'You are hidden. Turn off “Hide my location” to see people from your communities.'
-              : 'No one from this community is nearby right now.',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            color: PsiColors.black,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _HideLocationBar extends StatelessWidget {
-  const _HideLocationBar({
-    required this.hidden,
+class _LocationToggle extends StatelessWidget {
+  const _LocationToggle({
+    required this.visible,
     required this.busy,
     required this.onChanged,
   });
 
-  final bool hidden;
+  final bool visible;
   final bool busy;
   final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: PsiColors.white,
-      borderRadius: BorderRadius.circular(24),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Row(
-          children: [
-            const Expanded(
-              child: Text(
-                'Hide my location',
-                style: TextStyle(
-                  color: PsiColors.black,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            Switch(
-              value: hidden,
-              onChanged: busy ? null : onChanged,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _CommunityPill extends StatelessWidget {
-  const _CommunityPill({
-    required this.communities,
-    required this.selectedId,
-    required this.onChanged,
-  });
-
-  final List<Community> communities;
-  final String? selectedId;
-  final ValueChanged<String?> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: PsiColors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: PsiColors.black, width: 1.5),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: selectedId,
-            isDense: true,
-            dropdownColor: PsiColors.white,
-            style: const TextStyle(
-              color: PsiColors.black,
-              fontWeight: FontWeight.w700,
-            ),
-            items: communities
-                .map(
-                  (c) => DropdownMenuItem(value: c.id, child: Text(c.name)),
-                )
-                .toList(),
-            onChanged: onChanged,
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          visible ? 'Hide your location' : 'Show your location',
+          style: const TextStyle(
+            color: PsiColors.white,
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            shadows: [Shadow(color: Colors.black, blurRadius: 6)],
           ),
         ),
-      ),
+        Transform.scale(
+          scale: 0.8,
+          child: Switch(
+            value: visible,
+            onChanged: busy ? null : onChanged,
+          ),
+        ),
+      ],
     );
   }
 }
+

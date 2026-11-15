@@ -7,6 +7,7 @@ AGENTS.md
 .env
 .env.*
 !.env.example
+apps/mobile/dart_defines.json
 
 # --- Node / NestJS / Next.js (apps/backend, apps/web) ---
 node_modules/
