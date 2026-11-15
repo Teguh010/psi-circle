@@ -6,9 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../../core/models/discovery.dart';
+import '../../../core/models/vibe.dart';
 import '../../../core/providers/repository_providers.dart';
 import '../../../core/theme/app_theme.dart';
 import 'radar_map.dart';
+import 'vibe_badge.dart';
 
 /// Mock "you are here" — Surabaya-ish coords from the OpenAPI presence example.
 const _mockSelfLocation = LatLng(-7.123456, 112.123456);
@@ -89,6 +91,39 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  Future<void> _setVibe(Vibe? vibe) async {
+    final communityId = _communityId;
+    if (communityId == null || !(_presence?.isVisible ?? false)) return;
+    setState(() => _busy = true);
+    try {
+      final status = await ref.read(presenceRepositoryProvider).setVisible(
+            latitude: _mockSelfLocation.latitude,
+            longitude: _mockSelfLocation.longitude,
+            activeCommunityIds: [communityId],
+            vibe: vibe,
+          );
+      if (mounted) setState(() => _presence = status);
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  Future<void> _showVibePicker(bool visible) async {
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return _VibeDialog(
+          selected: _presence?.vibe,
+          enabled: visible && !_busy,
+          onSelected: (vibe) {
+            Navigator.of(dialogContext).pop();
+            _setVibe(vibe);
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -177,16 +212,23 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
               child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 6, 8, 0),
               child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Expanded(
-                    child: Text(
-                      'People nearby',
-                      style: TextStyle(
-                        color: PsiColors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                      ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'People nearby',
+                          style: TextStyle(
+                            color: PsiColors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        _VibeInfoButton(onPressed: () => _showVibePicker(visible)),
+                      ],
                     ),
                   ),
                   _LocationToggle(
@@ -283,46 +325,180 @@ class _PersonBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final fill = index.isEven ? PsiColors.red : PsiColors.white;
     final ink = index.isEven ? PsiColors.white : PsiColors.black;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: size,
-          height: size,
-          alignment: Alignment.center,
-          decoration: BoxDecoration(
-            color: fill,
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: PsiColors.black,
-              width: 2,
+    final vibe = person.vibe;
+    return SizedBox(
+      width: size,
+      height: size,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            width: size,
+            height: size,
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              color: fill,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: PsiColors.black,
+                width: 2,
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x66000000),
+                  blurRadius: 8,
+                  offset: Offset(0, 3),
+                ),
+              ],
             ),
-            boxShadow: const [
-              BoxShadow(color: Color(0x66000000), blurRadius: 8, offset: Offset(0, 3)),
+            child: Text(
+              person.displayName.isEmpty
+                  ? '?'
+                  : person.displayName[0].toUpperCase(),
+              style: TextStyle(
+                color: ink,
+                fontWeight: FontWeight.w800,
+                fontSize: size * 0.38,
+              ),
+            ),
+          ),
+          if (vibe != null)
+            Positioned(
+              right: -2,
+              bottom: -2,
+              child: VibeBadge(vibe: vibe, size: size * 0.42),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _VibeInfoButton extends StatelessWidget {
+  const _VibeInfoButton({required this.onPressed});
+
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: 'Good vibe',
+      visualDensity: VisualDensity.compact,
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+      icon: Icon(
+        Icons.info_outline,
+        size: 16,
+        color: PsiColors.white.withValues(alpha: 0.45),
+      ),
+    );
+  }
+}
+
+class _VibeDialog extends StatelessWidget {
+  const _VibeDialog({
+    required this.selected,
+    required this.enabled,
+    required this.onSelected,
+  });
+
+  final Vibe? selected;
+  final bool enabled;
+  final ValueChanged<Vibe?> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: PsiColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: PsiColors.black, width: 1.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Good vibe',
+              style: TextStyle(
+                color: PsiColors.black,
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            if (!enabled) ...[
+              const SizedBox(height: 6),
+              const Text(
+                'Show your location to set one.',
+                style: TextStyle(
+                  color: PsiColors.muted,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            for (final vibe in Vibe.values) ...[
+              _VibeRow(
+                vibe: vibe,
+                selected: vibe == selected,
+                enabled: enabled,
+                onTap: () => onSelected(vibe == selected ? null : vibe),
+              ),
+              const SizedBox(height: 8),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _VibeRow extends StatelessWidget {
+  const _VibeRow({
+    required this.vibe,
+    required this.selected,
+    required this.enabled,
+    required this.onTap,
+  });
+
+  final Vibe vibe;
+  final bool selected;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: selected ? PsiColors.red : PsiColors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: PsiColors.black, width: 1.5),
+      ),
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              VibeBadge(vibe: vibe, size: 22),
+              const SizedBox(width: 10),
+              Text(
+                vibe.label,
+                style: TextStyle(
+                  color: selected ? PsiColors.white : PsiColors.black,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
             ],
           ),
-          child: Text(
-            person.displayName.isEmpty
-                ? '?'
-                : person.displayName[0].toUpperCase(),
-            style: TextStyle(
-              color: ink,
-              fontWeight: FontWeight.w800,
-              fontSize: size * 0.38,
-            ),
-          ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          person.displayName,
-          style: const TextStyle(
-            color: PsiColors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
-            shadows: [Shadow(color: Colors.black, blurRadius: 6)],
-          ),
-        ),
-      ],
+      ),
     );
   }
 }

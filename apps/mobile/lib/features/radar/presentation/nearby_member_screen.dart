@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/models/discovery.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/psi_app_bar.dart';
+import 'vibe_badge.dart';
 
 /// Full-screen profile opened from a Radar avatar. Distance stays bucketed;
 /// this page never shows coordinates.
@@ -16,6 +17,7 @@ class NearbyMemberScreen extends StatelessWidget {
     final initial = person.displayName.isEmpty
         ? '?'
         : person.displayName[0].toUpperCase();
+    final vibe = person.vibe;
 
     return Scaffold(
       backgroundColor: PsiColors.white,
@@ -25,22 +27,37 @@ class NearbyMemberScreen extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
           child: Column(
             children: [
-              Container(
+              SizedBox(
                 width: 112,
                 height: 112,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: PsiColors.red,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: PsiColors.black, width: 2),
-                ),
-                child: Text(
-                  initial,
-                  style: const TextStyle(
-                    color: PsiColors.white,
-                    fontSize: 44,
-                    fontWeight: FontWeight.w800,
-                  ),
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Container(
+                      width: 112,
+                      height: 112,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        color: PsiColors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: PsiColors.black, width: 2),
+                      ),
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          color: PsiColors.white,
+                          fontSize: 44,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                    if (vibe != null)
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: VibeBadge(vibe: vibe, size: 32),
+                      ),
+                  ],
                 ),
               ),
               const SizedBox(height: 16),
@@ -87,6 +104,23 @@ class NearbyMemberScreen extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (vibe != null) ...[
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          VibeBadge(vibe: vibe, size: 22),
+                          const SizedBox(width: 8),
+                          Text(
+                            vibe.label,
+                            style: const TextStyle(
+                              color: PsiColors.black,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ],
                 ),
               ),
