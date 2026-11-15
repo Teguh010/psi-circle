@@ -20,6 +20,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Automotive Community',
         },
         'distanceLabel': '300-500 m',
+        'vibe': 'NGOPI',
       }),
       DiscoveryNearbyItem.fromJson(const {
         'userId': 'f5f0c6f0-5555-4a11-9a11-000000000005',
@@ -31,6 +32,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Automotive Community',
         },
         'distanceLabel': '300-500 m',
+        'vibe': 'DISKUSI',
       }),
       DiscoveryNearbyItem.fromJson(const {
         'userId': 'a6f0c6f0-6666-4a11-9a11-000000000006',
@@ -42,6 +44,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Automotive Community',
         },
         'distanceLabel': '500 m-1 km',
+        'vibe': null,
       }),
       DiscoveryNearbyItem.fromJson(const {
         'userId': 'b7f0c6f0-7777-4a11-9a11-000000000007',
@@ -53,6 +56,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Automotive Community',
         },
         'distanceLabel': '1-3 km',
+        'vibe': 'KEGIATAN',
       }),
       DiscoveryNearbyItem.fromJson(const {
         'userId': 'd3f0c6f0-3333-4a11-9a11-000000000003',
@@ -64,6 +68,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Cycling Community',
         },
         'distanceLabel': '500 m-1 km',
+        'vibe': 'OPEN_TO_SAY_HI',
       }),
       DiscoveryNearbyItem.fromJson(const {
         'userId': 'e4f0c6f0-4444-4a11-9a11-000000000004',
@@ -75,6 +80,7 @@ class MockDiscoveryRepository implements DiscoveryRepository {
           'name': 'Photography Community',
         },
         'distanceLabel': '1-3 km',
+        'vibe': null,
       }),
     ];
 
