@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../auth/presentation/session_controller.dart';
@@ -12,7 +13,7 @@ class ProfileScreen extends ConsumerWidget {
     final user = session.user;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: const PsiAppBar(title: Text('Profile')),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [

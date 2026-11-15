@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 
 class ChatsPlaceholderScreen extends StatelessWidget {
   const ChatsPlaceholderScreen({super.key});
@@ -6,7 +7,7 @@ class ChatsPlaceholderScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Chats')),
+      appBar: const PsiAppBar(title: Text('Chats')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(24),

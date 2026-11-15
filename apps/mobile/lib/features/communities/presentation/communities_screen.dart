@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -38,7 +39,7 @@ class _CommunitiesScreenState extends ConsumerState<CommunitiesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: PsiAppBar(
         title: const Text('Communities'),
         actions: [
           IconButton(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../core/theme/app_theme.dart';
+import '../../../core/theme/psi_app_bar.dart';
 import '../../../core/models/community.dart';
 import '../../../core/models/discovery.dart';
 import '../../../core/providers/repository_providers.dart';
@@ -99,7 +101,7 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
     // Map must sit in a bounded box outside a scrolling ListView — putting
     // FlutterMap inside ListView triggers layout/semantics assertion storms.
     return Scaffold(
-      appBar: AppBar(title: const Text('Radar')),
+      appBar: const PsiAppBar(title: Text('Radar')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -235,17 +237,8 @@ class _RadarScreenState extends ConsumerState<RadarScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          // Do not use theme FilledButton here — app theme sets
-                          // minimumSize: Size.fromHeight(48) (infinite width),
-                          // which breaks as a ListTile/row trailing action.
-                          FilledButton.tonal(
-                            style: FilledButton.styleFrom(
-                              minimumSize: const Size(72, 40),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
+                          FilledButton(
+                            style: PsiButtons.compact(),
                             onPressed: () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(

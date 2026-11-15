@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/community.dart';
@@ -87,7 +88,7 @@ class _CommunityDetailScreenState extends ConsumerState<CommunityDetailScreen> {
         mockRepo is MockCommunitiesRepository;
 
     return Scaffold(
-      appBar: AppBar(title: Text(community.name)),
+      appBar: PsiAppBar(title: Text(community.name)),
       body: ListView(
         padding: const EdgeInsets.all(24),
         children: [

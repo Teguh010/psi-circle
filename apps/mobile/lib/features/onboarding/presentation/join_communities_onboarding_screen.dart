@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/models/community.dart';
@@ -38,7 +39,7 @@ class _JoinCommunitiesOnboardingScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Join a community')),
+      appBar: const PsiAppBar(title: Text('Join a community')),
       body: SafeArea(
         child: Column(
           children: [

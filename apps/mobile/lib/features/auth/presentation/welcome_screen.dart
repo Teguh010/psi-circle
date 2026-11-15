@@ -18,12 +18,13 @@ class WelcomeScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               const Spacer(),
-              Container(
-                width: 48,
-                height: 4,
-                color: PsiColors.red,
+              const Align(
+                child: Image(
+                  image: AssetImage('assets/brand/psi_logo.png'),
+                  height: 168,
+                ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 8),
               Text(
                 'Psi Circle',
                 style: theme.textTheme.displaySmall?.copyWith(

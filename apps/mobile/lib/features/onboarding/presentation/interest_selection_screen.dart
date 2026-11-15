@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:psi_circle_mobile/core/theme/app_theme.dart';
+import 'package:psi_circle_mobile/core/theme/psi_app_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -33,7 +35,7 @@ class _InterestSelectionScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Your interests')),
+      appBar: const PsiAppBar(title: Text('Your interests')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
@@ -60,8 +62,18 @@ class _InterestSelectionScreenState
                     children: kInterestOptions.map((interest) {
                       final selected = _selected.contains(interest);
                       return FilterChip(
-                        label: Text(interest),
+                        label: Text(
+                          interest,
+                          style: TextStyle(
+                            color: selected ? PsiColors.white : PsiColors.red,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
                         selected: selected,
+                        showCheckmark: false,
+                        selectedColor: PsiColors.red,
+                        backgroundColor: PsiColors.white,
+                        side: const BorderSide(color: PsiColors.black, width: 1.5),
                         onSelected: (value) {
                           setState(() {
                             if (value) {
