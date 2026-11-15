@@ -407,6 +407,7 @@ paths:
               longitude: 112.123456
               activeCommunityIds: ["c1111111-0000-0000-0000-000000000001"]
               radius: 3000
+              vibe: "NGOPI"
       responses:
         '200':
           description: Presence published
@@ -421,6 +422,7 @@ paths:
                   visibility: "VISIBLE"
                   activeCommunityIds: ["c1111111-0000-0000-0000-000000000001"]
                   radius: 3000
+                  vibe: "NGOPI"
                   updatedAt: "2026-11-15T08:00:00Z"
                   expiresAt: "2026-11-15T08:02:00Z"
         '400': { $ref: '#/components/responses/BadRequest' }
@@ -451,6 +453,7 @@ paths:
                   visibility: "INVISIBLE"
                   activeCommunityIds: []
                   radius: null
+                  vibe: null
                   updatedAt: "2026-11-15T08:05:00Z"
                   expiresAt: null
         '401': { $ref: '#/components/responses/Unauthorized' }
@@ -460,6 +463,10 @@ paths:
       tags: [Presence]
       operationId: presenceHeartbeat
       summary: Refresh presence TTL (and optionally updated coordinates)
+      description: >
+        Same body as POST /presence/visible. If `vibe` is omitted, the stored preset
+        is kept. If `vibe` is null, the badge is cleared. A preset value replaces it.
+        Coordinates stay in Redis only and are never returned.
       requestBody:
         required: true
         content:
@@ -531,12 +538,14 @@ paths:
                     avatarUrl: null
                     community: { id: "c1111111-0000-0000-0000-000000000001", name: "Automotive Community" }
                     distanceLabel: "300-500 m"
+                    vibe: "NGOPI"
                   - userId: "d3f0c6f0-3333-4a11-9a11-000000000003"
                     displayName: "Daniel"
                     username: "daniel_r"
                     avatarUrl: null
                     community: { id: "c2222222-0000-0000-0000-000000000002", name: "Cycling Community" }
                     distanceLabel: "500 m-1 km"
+                    vibe: null
         '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403':
@@ -898,6 +907,14 @@ components:
       type: string
       enum: [VISIBLE, INVISIBLE, EVENT]
 
+    VibeStatus:
+      type: string
+      description: >
+        Fixed good-vibe preset shown as a badge on a Visible member. No free text
+        and no place name. NGOPI is hanging out, DISKUSI is a conversation,
+        KEGIATAN is a community activity nearby, OPEN_TO_SAY_HI is open to a greeting.
+      enum: [NGOPI, DISKUSI, KEGIATAN, OPEN_TO_SAY_HI]
+
     ReportStatus:
       type: string
       enum: [OPEN, REVIEWED, DISMISSED]
@@ -1065,6 +1082,14 @@ components:
           minimum: 100
           maximum: 10000
           default: 3000
+        vibe:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/VibeStatus'
+          description: >
+            Optional. On POST /presence/visible, null or omitted means Visible with
+            no badge. On POST /presence/heartbeat, omit this field to keep the
+            current preset, send null to clear it, or send a preset to replace it.
       required: [latitude, longitude, activeCommunityIds]
 
     PresenceStatus:
@@ -1076,6 +1101,11 @@ components:
           type: array
           items: { type: string, format: uuid }
         radius: { type: integer, nullable: true }
+        vibe:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/VibeStatus'
+          description: Null when Invisible, or when Visible with no badge.
         updatedAt: { type: string, format: date-time }
         expiresAt: { type: string, format: date-time, nullable: true }
 
@@ -1094,6 +1124,11 @@ components:
         distanceLabel:
           type: string
           description: "Bucketed label, e.g. 'Less than 500 m', '500 m-1 km', '1-3 km', '3-5 km'. Never a precise value."
+        vibe:
+          nullable: true
+          allOf:
+            - $ref: '#/components/schemas/VibeStatus'
+          description: Preset badge for this member, or null when they have not set one.
 
     DiscoveryNearbyResponse:
       type: object

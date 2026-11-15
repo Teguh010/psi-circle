@@ -29,6 +29,8 @@ Source: PRD §4, §13, §16, §20.
 - Turning Invisible must delete the Redis presence key and remove GEO-set membership
   immediately — do not wait for TTL in this case.
 - Never write raw GPS coordinates into any PostgreSQL table, log line, or analytics event.
+- The good-vibe preset lives only inside the Redis presence value. Deleting or expiring
+  that key deletes the vibe. It is a fixed preset, never free text and never a place name.
 
 ## 3. Data access (PRD §4.3)
 
@@ -39,6 +41,7 @@ Never:
 - Provide a "find location by user id" endpoint.
 - Build an admin dashboard showing member positions.
 - Leak presence/location to a community the user did not select as active.
+- Return `vibe` to anyone who would not already be allowed to see that member on Radar.
 - Add a hidden/background tracking feature of any kind.
 
 ## 4. Safety features (mandatory for MVP, PRD §4.4)

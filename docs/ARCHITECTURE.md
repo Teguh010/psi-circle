@@ -105,8 +105,10 @@ implementation, so swapping mock → http does not require UI changes.
 ## 5. Data flow: presence & discovery (core feature)
 
 1. Mobile asks for foreground location permission, explains why (PRD §4.4).
-2. User taps **Visible**. Mobile sends `POST /presence/visible` with coordinates and
-   `activeCommunityIds`.
+2. User taps **Visible**. Mobile sends `POST /presence/visible` with coordinates,
+   `activeCommunityIds`, and an optional `vibe` preset (`NGOPI`, `DISKUSI`, `KEGIATAN`,
+   `OPEN_TO_SAY_HI`, or null). Changing the preset sends the same call again. Heartbeats
+   that omit `vibe` keep the stored preset.
 3. Backend validates: authenticated, ACTIVE membership on each community id, valid
    coordinates, radius within limits, not globally blocked.
 4. Backend writes an entry to Redis (`presence:{userId}`) with TTL (default 120s) and adds
@@ -117,7 +119,7 @@ implementation, so swapping mock → http does not require UI changes.
    settings), computes a bucketed distance label, and returns only safe fields — never
    coordinates.
 7. On **Invisible**, mobile calls `POST /presence/invisible` and the backend deletes the
-   Redis key and GEO entries immediately.
+   Redis key and GEO entries immediately. The vibe is deleted with that key.
 8. If heartbeats stop, Redis TTL expires the key automatically — no manual cleanup job
    needed for the common case, but a safety sweep job may be added in Phase 6 to also
    detect/clean orphaned GEO set membership (GEO sets do not auto-expire per key).

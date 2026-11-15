@@ -84,6 +84,12 @@ is added to the contract.
 - [ ] **All 7 mandatory privacy tests from `docs/PRIVACY_AND_SECURITY.md` §6 must pass
       before this phase is considered done.**
 
+**Decision (2026-11-15, user-approved PRD change):** Good vibe is an optional preset on
+Visible, not a fourth visibility mode and not Event Mode. Contract field `vibe` is
+`NGOPI`, `DISKUSI`, `KEGIATAN`, `OPEN_TO_SAY_HI`, or null. It is stored only in the Redis
+presence value and cleared with it. Heartbeats that omit `vibe` keep the current preset.
+Mock Radar UI shows the badge; the presence backend is still this phase's later work.
+
 **Deliverable:** Users can discover nearby members from shared active communities, with
 no raw coordinates ever leaving the backend.
 

@@ -161,6 +161,7 @@ Key: `presence:{userId}` → JSON value, TTL default 120s (configurable):
   "longitude": 112.123456,
   "activeCommunityIds": ["uuid"],
   "visibility": "VISIBLE",
+  "vibe": "NGOPI",
   "updatedAt": "2026-11-15T00:00:00Z"
 }
 ```
@@ -169,6 +170,9 @@ Per-community GEO index for radius queries: `geo:community:{communityId}` (Redis
 member = `userId`). On Invisible or TTL expiry, the user must be removed from every
 `geo:community:*` set they were added to — track membership so cleanup is O(active
 communities), not a full scan.
+
+`vibe` is null or one of `NGOPI`, `DISKUSI`, `KEGIATAN`, `OPEN_TO_SAY_HI`. It is deleted
+with the presence key. Never persist a history of vibes.
 
 Never expose raw `latitude`/`longitude` through any API response. Never persist presence
 history — only the current snapshot exists, and only in Redis.

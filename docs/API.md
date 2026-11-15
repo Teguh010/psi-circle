@@ -54,8 +54,8 @@ Enforced server-side, not just documented. Initial limits (configurable):
 | Auth | `/auth/*` | register, login, refresh, logout, verify-email |
 | Profile | `/users/*` | self profile CRUD, public profile read (filtered) |
 | Communities | `/communities/*` | CRUD, search, join/leave, members |
-| Presence | `/presence/*` | visible/invisible/heartbeat/status — never returns another user's coordinates |
-| Discovery | `/discovery/nearby` | bucketed distance only, never raw coordinates |
+| Presence | `/presence/*` | visible/invisible/heartbeat/status — optional `vibe` preset; never returns another user's coordinates |
+| Discovery | `/discovery/nearby` | bucketed distance plus nullable `vibe`; never raw coordinates |
 | Connections | `/connections/*` | wave/accept/reject/list |
 | Chat | `/chats/*` | conversations + messages, membership-checked |
 | Safety | `/users/:userId/block`, `/reports` | block/unblock/report |

@@ -5,6 +5,27 @@ Newest entry on top.
 
 ---
 
+## 2026-11-15 — Good vibe on Radar (PRD + contract + mock UI)
+
+**Status:** Documented and visible on the mock Radar. Backend presence is still unbuilt.
+
+**Decision (user-approved change to `prd.md`):** While Visible, a member may set one
+fixed preset — `NGOPI`, `DISKUSI`, `KEGIATAN`, or `OPEN_TO_SAY_HI`. No free text and no
+place name. The preset is a badge on the avatar and one word on the member card. It is
+stored only in the Redis presence value and disappears with Invisible, a stopped
+heartbeat, or TTL expiry. Event Mode stays P1.
+
+**What changed:**
+
+- `prd.md` §3.4, §3.5, §4.1, FR-021, §8.11, §9.4, §9.5, §15.
+- `docs/api/openapi.yaml` — `VibeStatus` on presence requests/status and discovery items.
+- `docs/DATABASE.md`, `docs/ARCHITECTURE.md`, `docs/API.md`,
+  `docs/PRIVACY_AND_SECURITY.md`, `docs/DEVELOPMENT_PLAN.md`.
+- Mobile mock Radar: vibe picker while Visible, badge on nearby avatars, word on the
+  member screen. Repositories still return contract-shaped JSON. No HTTP yet.
+
+---
+
 ## 2026-11-15 — Phase 2 (partial): Flutter UI on mock data
 
 **Status:** In progress (mobile mock UI done; backend + integration not started)
